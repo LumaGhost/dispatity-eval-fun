@@ -2,3 +2,5 @@
 /datasets/
 /.vscode/
 /.devcontainer/
+/__pycache__/
+/disparity-env/
