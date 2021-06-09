@@ -11,13 +11,13 @@ i.e. a collection of folders with the following contents:
 '''
 ALL_DATASETS = "./datasets/middlebury/2014/"
 
-'''
-this function should expect two matricies representing the left and right image
-and return a matrix representing the disparity map calculated from the two images
-note: invalid pixels should be expressed as inf/nan. all pixels that are not inf
-or nan will be considered valid disparities for the purpose of average and other calculations
-'''
 def calc_dispariry(im1, im2):
+    '''
+    this function should expect two matricies representing the left and right image
+    and return a matrix representing the disparity map calculated from the two images
+    note: invalid pixels should be expressed as inf/nan. all pixels that are not inf
+    or nan will be considered valid disparities for the purpose of average and other calculations
+    '''
     stereo = cv.StereoSGBM_create(numDisparities=300, blockSize=8)
     disp = stereo.compute(im1,im2).astype(np.float32) / 16.0
     disp[disp <= 0.0] = np.inf

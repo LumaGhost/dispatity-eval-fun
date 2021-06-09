@@ -91,23 +91,16 @@ calculate the disparity map using the input disparity func
 return BenchResults averaged over all folders
 '''
 def iterate_files(*, disparity_func, conf):
-    all_folders = os.listdir(config.ALL_DATASETS)
-    entry_count = len(all_folders)
-    percent_bad = []
-    percent_invalid = []
-    avg_diff = []
-    for entry in all_folders:
-        full_path = os.path.join(config.ALL_DATASETS, entry)
-        print("reading {}".format(full_path))
-        if '.' in entry:
-            print("skipping {}".format(full_path))
-            continue
-        results = process_folder(path=full_path, 
-                                disparity_func=disparity_func,
-                                conf=conf)
-        percent_bad.append(results.percent_bad)
-        percent_invalid.append(results.percent_invalid)
-        avg_diff.append(results.avg_diff)
+    all_results = []
+    for root, dirs, _ in os.walk(config.ALL_DATASETS):
+        for name in dirs:
+            full_path = os.path.join(root, name)
+            print("reading {}".format(full_path))
+            results = process_folder(path=full_path, 
+                                    disparity_func=disparity_func,
+                                    conf=conf)
+            all_results.append(results)
+    percent_bad, percent_invalid, avg_diff = list(zip(*all_results))
     return BenchResults(percent_bad=np.average(percent_bad),
                         percent_invalid=np.average(percent_invalid),
                         avg_diff=np.average(avg_diff))

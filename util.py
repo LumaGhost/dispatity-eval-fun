@@ -4,13 +4,14 @@ from struct import *
 import numpy as np
 import cv2 as cv
 
-## https://gist.github.com/chpatrick/8935738
-'''
-Load a PFM file into a Numpy array. Note that it will have
-a shape of H x W, not W x H. Returns a tuple containing the
-loaded image and the scale factor from the file.
-'''
 def load_pfm(path):
+    '''
+    copy pasted from 
+    https://gist.github.com/chpatrick/8935738 (:
+    Load a PFM file into a Numpy array. Note that it will have
+    a shape of H x W, not W x H. Returns a tuple containing the
+    loaded image and the scale factor from the file.
+    '''
     color = None
     width = None
     height = None
@@ -43,12 +44,13 @@ def load_pfm(path):
         shape = (height, width, 3) if color else (height, width)
         return np.flipud(np.reshape(data, shape))
 
-# https://gist.github.com/chpatrick/8935738#gistcomment-2765922
-'''
-normalize the floating point values of a pfm so that its displayable
-as a grayscale imagen with opencv
-'''
+
 def displayable_pfm(data):
+    '''
+    https://gist.github.com/chpatrick/8935738#gistcomment-2765922
+    normalize the floating point values of a pfm so that its displayable
+    as a grayscale imagen with opencv
+    '''
     max_val_pct=0.1
     data = np.where(data == np.inf, -1, data)
     max_val = np.max(data)
