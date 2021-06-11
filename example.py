@@ -33,6 +33,7 @@ if __name__ == "__main__":
     bench_conf= disp_eval.BenchConfig(lighting=args.lighting,
                                       bad_threshold=args.bad_threshold,
                                       all_datasets=args.all_datasets)
+    print("config: {}".format(bench_conf))
     sgbm_results = disp_eval.run_benchmark(disparity_func=sgbm, 
                                           conf=bench_conf)
     print("sgbm: {}".format(sgbm_results))
