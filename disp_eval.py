@@ -10,7 +10,7 @@ import config
 '''
 grouping the config parameters supllied by the user
 '''
-BenchConfig = namedtuple('BenchConfig', ['lighting','bad_threshold'])
+BenchConfig = namedtuple('BenchConfig', ['lighting','bad_threshold', 'all_datasets'])
 
 '''
 metrics returned by the benchmark
@@ -27,7 +27,7 @@ BenchResults = namedtuple('BenchResults', ['percent_bad',
 '''
 maps the lighting config paramter to the image1 name that should be loaded
 '''
-def img1_name(lighting):
+def _img1_name(lighting):
     if lighting == "" or lighting == "default":
         return "im1.png"
     elif lighting.upper() == "E":
@@ -38,7 +38,7 @@ def img1_name(lighting):
         raise ValueError("unexpected lighting option: {}".format(lighting))
 
 
-def process_folder(*, path, disparity_func, conf):
+def process_folder(*, dataset_folder, disparity_func, conf):
     '''
     - calculate dispairity between im0 and the im1 version specified by the config
     using the input disparity function
@@ -48,9 +48,9 @@ def process_folder(*, path, disparity_func, conf):
     - calculate the percent of pixels with a disparity difference below the "bad threshold"
     - calculate the percent of "invalid" disparity results i.e. nan or inf
     '''
-    im0 = cv.imread(os.path.join(path, "im0.png"))
-    im1 = cv.imread(os.path.join(path, img1_name(conf.lighting)))
-    true_disp = util.load_pfm(os.path.join(path, "disp0.pfm"))
+    im0 = cv.imread(os.path.join(dataset_folder, "im0.png"))
+    im1 = cv.imread(os.path.join(dataset_folder, _img1_name(conf.lighting)))
+    true_disp = util.load_pfm(os.path.join(dataset_folder, "disp0.pfm"))
 
     disp = disparity_func(im0, im1)
 
@@ -75,17 +75,17 @@ def process_folder(*, path, disparity_func, conf):
 
 def run_benchmark(*, disparity_func, conf):
     '''
-    iterate though any folders in config.ALL_DATASETS
+    iterate though any folders in conf.all_datasets
     load im0 and either im1 im1E or im1L depending on the input config
     calculate the disparity map using the input disparity func
     return BenchResults averaged over all folders
     '''
     all_results = []
-    for root, dirs, _ in os.walk(config.ALL_DATASETS):
+    for root, dirs, _ in os.walk(conf.all_datasets):
         for name in dirs:
             full_path = os.path.join(root, name)
             print("reading {}".format(full_path))
-            results = process_folder(path=full_path, 
+            results = process_folder(dataset_folder=full_path, 
                                     disparity_func=disparity_func,
                                     conf=conf)
             all_results.append(results)
@@ -98,5 +98,6 @@ def run_benchmark(*, disparity_func, conf):
 if __name__ == "__main__":
     results = run_benchmark(disparity_func=config.calc_dispariry, 
                             conf=BenchConfig(lighting=config.LIGHTING,
-                                             bad_threshold=config.BAD_THRESHOLD))
+                                             bad_threshold=config.BAD_THRESHOLD,
+                                             all_datasets=config.ALL_DATASETS))
     print(results)
