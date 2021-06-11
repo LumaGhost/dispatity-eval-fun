@@ -9,6 +9,9 @@ i.e. a collection of folders with the following contents:
     img1.png, imgE1.png, imgL1.png (right camera image in different lighting conditions)
     disp0.pfm (floating point ground truth horizontal disparity relative to the left image)
     note: currently for simplicity only disp0 is supported
+datasets can be downloaded here https://vision.middlebury.edu/stereo/data/scenes2014/zip/
+download and unzip as many as you wish to use
+place all of the datasets in the "ALL_DATASETS" folder
 '''
 ALL_DATASETS = "./datasets/middlebury/2014/"
 
