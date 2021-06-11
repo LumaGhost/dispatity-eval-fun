@@ -8,13 +8,12 @@ import config
 
 
 '''
-lighting: default/E/L to specifiy which image1 version to load from the dataset
-bad_threshold: disparity difference from the ground truth where pixels will be
-    considered "bad" for the purpose of calculating the % of "bad pixels"
+grouping the config parameters supllied by the user
 '''
 BenchConfig = namedtuple('BenchConfig', ['lighting','bad_threshold'])
 
 '''
+metrics returned by the benchmark
 percent bad: percent of pixels with a disparity difference larger than
     the "bad threshold" specified in the config
 percent invalid: percent of pixels with nan/inf disparity
@@ -24,6 +23,10 @@ BenchResults = namedtuple('BenchResults', ['percent_bad',
                                            'percent_invalid',
                                            'avg_diff'])
 
+
+'''
+maps the lighting config paramter to the image1 name that should be loaded
+'''
 def img1_name(lighting):
     if lighting == "" or lighting == "default":
         return "im1.png"
@@ -34,27 +37,20 @@ def img1_name(lighting):
     else:
         raise ValueError("unexpected lighting option: {}".format(lighting))
 
-'''
-- calculate dispairity between im0 and the im1 version specified by the config
-using the input disparity function
-- note: assertion failure if the calculated disparty and ground truth disparity
-are not the same shape
-- calculate the average element wise absolute difference from the ground truth (excluding nan and inf)
-- calculate the percent of pixels with a disparity difference below the "bad threshold"
-- calculate the percent of "invalid" disparity results i.e. nan or inf
 
-
-'''
 def process_folder(*, path, disparity_func, conf):
+    '''
+    - calculate dispairity between im0 and the im1 version specified by the config
+    using the input disparity function
+    - note: assertion failure if the calculated disparty and ground truth disparity
+    are not the same shape
+    - calculate the average element wise absolute difference from the ground truth (excluding nan and inf)
+    - calculate the percent of pixels with a disparity difference below the "bad threshold"
+    - calculate the percent of "invalid" disparity results i.e. nan or inf
+    '''
     im0 = cv.imread(os.path.join(path, "im0.png"))
     im1 = cv.imread(os.path.join(path, img1_name(conf.lighting)))
-    # IMREAD_UNCHANGED gives the same result
-    # true_disp = cv.imread(os.path.join(path, "disp0.pfm"), cv.IMREAD_ANYDEPTH)
     true_disp = util.load_pfm(os.path.join(path, "disp0.pfm"))
-    # cv.imshow("true_disp", util.displayable_pfm(true_disp))
-    # cv.imshow("im0", im0)
-    # cv.imshow("im1", im1)
-    # cv.waitKey(0)
 
     disp = disparity_func(im0, im1)
 
@@ -72,25 +68,18 @@ def process_folder(*, path, disparity_func, conf):
     avg_diff = np.average(disp_diff[np.logical_and(~np.isnan(disp_diff),
                                                     ~np.isinf(disp_diff))])
 
-    # print("precent bad: {}".format(percent_bad))
-    # print("percent invalid: {}".format(percent_invalid))
-    # print("avg diff: {}".format(avg_diff))
-    
-    # cv.imshow("disp", displayable_pfm(disp))
-    # cv.waitKey(0)
-
     return BenchResults(percent_bad=percent_bad,
                         percent_invalid=percent_invalid,
                         avg_diff=avg_diff)
 
 
-'''
-iterate though any folders in config.ALL_DATASETS
-load im0 and either im1 im1E or im1L depending on the input config
-calculate the disparity map using the input disparity func
-return BenchResults averaged over all folders
-'''
-def iterate_files(*, disparity_func, conf):
+def run_benchmark(*, disparity_func, conf):
+    '''
+    iterate though any folders in config.ALL_DATASETS
+    load im0 and either im1 im1E or im1L depending on the input config
+    calculate the disparity map using the input disparity func
+    return BenchResults averaged over all folders
+    '''
     all_results = []
     for root, dirs, _ in os.walk(config.ALL_DATASETS):
         for name in dirs:
@@ -105,7 +94,9 @@ def iterate_files(*, disparity_func, conf):
                         percent_invalid=np.average(percent_invalid),
                         avg_diff=np.average(avg_diff))
 
+
 if __name__ == "__main__":
-    results = iterate_files(disparity_func=config.calc_dispariry, 
-                            conf=BenchConfig(lighting="default", bad_threshold=1.5))
+    results = run_benchmark(disparity_func=config.calc_dispariry, 
+                            conf=BenchConfig(lighting=config.LIGHTING,
+                                             bad_threshold=config.BAD_THRESHOLD))
     print(results)

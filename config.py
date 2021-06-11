@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 
+
 '''
 folder should contain entries from the middlebury 2014 dataset
 i.e. a collection of folders with the following contents:
@@ -10,6 +11,17 @@ i.e. a collection of folders with the following contents:
     note: currently for simplicity only disp0 is supported
 '''
 ALL_DATASETS = "./datasets/middlebury/2014/"
+
+'''
+lighting: "default", "E", or "L" to specifiy which image1 version to load from the dataset
+'''
+LIGHTING = "default"
+
+'''
+bad_threshold: disparity difference from the ground truth where pixels will be
+    considered "bad" for the purpose of calculating the % of "bad pixels"
+'''
+BAD_THRESHOLD = 1.5
 
 def calc_dispariry(im1, im2):
     '''
